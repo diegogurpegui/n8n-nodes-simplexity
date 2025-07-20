@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "lib": ["es2020"],
+    "pretty": true,
+    "target": "es2020",
+    "module": "commonjs",
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "outDir": "./dist/",
+    "noEmitOnError": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "allowJs": true,
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["credentials/**/*", "nodes/**/*"],
+  "exclude": ["node_modules/**/*", "**/*.spec.ts"]
+} 

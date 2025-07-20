@@ -1,0 +1,56 @@
+{
+  "name": "n8n-nodes-simplexity",
+  "version": "0.1.0",
+  "description": "n8n nodes for SimpleX Chat integration",
+  "keywords": [
+    "n8n",
+    "n8n-node",
+    "n8n-custom-node",
+    "simplex",
+    "chat",
+    "messaging"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/diegogurpegui/n8n-nodes-simplexity.git",
+  "author": {
+    "name": "Diego H. Gurpegui"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/diegogurpegui/n8n-nodes-simplexity.git"
+  },
+  "main": "n8n-index.js",
+  "scripts": {
+    "build": "tsc && gulp build:icons",
+    "dev": "tsc --watch",
+    "format": "prettier nodes credentials --write",
+    "lint": "eslint nodes credentials package.json",
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "credentials": [
+      "dist/credentials/SimpleXity.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/SimpleX/SimpleXityTrigger.node.js",
+      "dist/nodes/SimpleX/SimpleXityAction.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/parser": "^8.37.0",
+    "eslint-plugin-n8n-nodes-base": "^1.0.0",
+    "gulp": "^5.0.1",
+    "n8n-core": "^1.14.1",
+    "n8n-workflow": "^1.82.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "simplex-chat": "^0.2.1"
+  }
+}
