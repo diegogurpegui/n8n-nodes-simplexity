@@ -8,23 +8,23 @@ import {
 import { ChatClient } from 'simplex-chat';
 import { ChatType } from 'simplex-chat/dist/command';
 
-export class SimpleXitySendAction implements INodeType {
+export class Simplexity implements INodeType {
   description: INodeTypeDescription = {
-    displayName: 'SimpleXity Send',
-    name: 'simplexitySend',
+    displayName: 'SimpleXity',
+    name: 'simplexity',
     icon: 'file:simplexity.svg',
     group: ['action'],
     version: 1,
     subtitle: 'Send a message to a contact',
     description: 'Send messages to SimpleX contact',
     defaults: {
-      name: 'SimpleXity Send',
+      name: 'Simplexity',
     },
     inputs: [NodeConnectionType.Main],
     outputs: [NodeConnectionType.Main],
     credentials: [
       {
-        name: 'simplexityConfig',
+        name: 'simplexityApi',
         required: true,
       },
     ],
@@ -52,7 +52,7 @@ export class SimpleXitySendAction implements INodeType {
     const items = this.getInputData();
     const returnData: INodeExecutionData[] = [];
 
-    const credentials = await this.getCredentials('simplexityConfig');
+    const credentials = await this.getCredentials('simplexityApi');
     const chat = await ChatClient.create(`ws://${credentials.host}:${credentials.port}`);
 
     for (let i = 0; i < items.length; i++) {

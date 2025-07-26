@@ -1,6 +1,6 @@
-import { SimpleXityTrigger } from './nodes/SimpleX/SimpleXityTrigger.node';
-import { SimpleXitySendAction } from './nodes/SimpleX/SimpleXitySendAction.node';
-import { SimpleXityConfig } from './credentials/SimpleXity.credentials';
+import { SimpleXityTrigger } from './nodes/SimpleXity/SimplexityTrigger.node';
+import { Simplexity } from './nodes/SimpleXity/Simplexity.node';
+import { SimplexityApi } from './credentials/SimplexityApi.credentials';
 
-export const nodes = [SimpleXityTrigger, SimpleXitySendAction];
-export const credentials = [SimpleXityConfig]; 
+export const nodes = [SimpleXityTrigger, Simplexity];
+export const credentials = [SimplexityApi];

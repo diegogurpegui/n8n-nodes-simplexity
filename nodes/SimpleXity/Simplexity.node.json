@@ -1,0 +1,18 @@
+{
+  "node": "n8n-nodes-base.simplexity",
+  "nodeVersion": "0.1.0",
+  "codexVersion": "1.0",
+  "categories": ["Communication"],
+  "resources": {
+    "primaryDocumentation": [
+      {
+        "url": "https://github.com/diegogurpegui/n8n-nodes-simplexity"
+      }
+    ],
+    "credentialDocumentation": [
+      {
+        "url": "https://github.com/diegogurpegui/n8n-nodes-simplexity"
+      }
+    ]
+  }
+}

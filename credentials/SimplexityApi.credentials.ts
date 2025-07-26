@@ -1,8 +1,9 @@
 import { ICredentialType, INodeProperties } from 'n8n-workflow';
 
-export class SimpleXityConfig implements ICredentialType {
-  name = 'simplexityConfig';
-  displayName = 'SimpleXity Config';
+export class SimplexityApi implements ICredentialType {
+  name = 'simplexityApi';
+  displayName = 'SimpleXity Config API';
+  description = 'Configuration to connect to the SimpleX local node.';
   documentationUrl = 'https://github.com/diegogurpegui/n8n-nodes-simplexity';
   properties: INodeProperties[] = [
     {
@@ -27,7 +28,7 @@ export class SimpleXityConfig implements ICredentialType {
       type: 'string',
       default: '',
       description: 'SimpleX CLI bot address (optional - will be created if not provided)',
-      required: false,
+      // required: false,
     },
   ];
 }

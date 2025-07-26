@@ -12,13 +12,12 @@ import {
   ChatInfoType,
   ChatResponse,
   ChatInfo,
-  Contact,
   ChatItem,
   CIMeta,
 } from 'simplex-chat/dist/response';
 import { SimpleXFile } from '../../types/simplex';
 
-interface SimpleXityTriggerOutput extends IDataObject {
+interface SimplexityTriggerOutput extends IDataObject {
   messageType: string;
   timestamp: string;
   messages?: Array<{
@@ -45,11 +44,11 @@ export class SimpleXityTrigger implements INodeType {
     defaults: {
       name: 'SimpleXity Trigger',
     },
-    inputs: [] as any,
+    inputs: [],
     outputs: [NodeConnectionType.Main],
     credentials: [
       {
-        name: 'simplexityConfig',
+        name: 'simplexityApi',
         required: true,
       },
     ],
@@ -79,7 +78,7 @@ export class SimpleXityTrigger implements INodeType {
   };
 
   async trigger(this: ITriggerFunctions): Promise<ITriggerResponse> {
-    const credentials = await this.getCredentials('simplexityConfig');
+    const credentials = await this.getCredentials('simplexityApi');
     const messageTypes = this.getNodeParameter('messageTypes', []) as string[];
 
     const chat = await ChatClient.create(`ws://${credentials.host}:${credentials.port}`);
@@ -103,7 +102,7 @@ export class SimpleXityTrigger implements INodeType {
             continue;
           }
 
-          let outputData: SimpleXityTriggerOutput = {
+          let outputData: SimplexityTriggerOutput = {
             messageType: resp.type,
             timestamp: new Date().toISOString(),
           };
@@ -118,7 +117,7 @@ export class SimpleXityTrigger implements INodeType {
               break;
             }
             case 'newChatItems': {
-              const messages: SimpleXityTriggerOutput['messages'] = [];
+              const messages: SimplexityTriggerOutput['messages'] = [];
               for (const { chatInfo, chatItem } of resp.chatItems) {
                 // Only process direct messages
                 if (chatInfo.type !== ChatInfoType.Direct) continue;
