@@ -2,6 +2,7 @@
 
 This project provides a n8n node for integrating with SimpleX Chat, allowing you to trigger workflows on incoming messages and send messages to contacts.
 
+
 ## Features
 
 - **SimpleXity Trigger Node**: Listens for incoming SimpleX messages and triggers workflows
@@ -9,21 +10,14 @@ This project provides a n8n node for integrating with SimpleX Chat, allowing you
 - **Credential Management**: Secure storage of SimpleX connection settings
 
 ## Requirements
-
 A SimpleX Chat CLI should be running.  
+
+### Option 1: Packaged Docker (recommended)
+This repository contains a Dockerfile and docker-compose.yml ready to run the SimpleX Chat Cli.  
+Check the corresponding [README.md](./utils/simplex-chat-cli/README.md) file
+
+### Option 2: Manual
 For more information: https://github.com/simplex-chat/simplex-chat/blob/stable/docs/CLI.md
-
-### SimpleX Chat CLI installation
-This is a simple guide for getting the CLI running.
-
-First install the CLI with Docker  
-(More info: https://simplex.chat/docs/cli.html#using-docker)
-```sh
-git clone https://github.com/simplex-chat/simplex-chat.git
-cd simplex-chat
-git checkout stable
-DOCKER_BUILDKIT=1 docker build --output ~/.local/bin .
-```
 
 
 ## Installation
@@ -42,6 +36,7 @@ Steps for installing locally:
    npm run build
    ```
 4. Copy the `dist` folder to your n8n custom nodes directory
+
 
 ## Configuration
 
