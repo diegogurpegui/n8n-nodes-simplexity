@@ -12,13 +12,17 @@
     "messaging"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/diegogurpegui/n8n-nodes-simplexity.git",
+  "homepage": "https://github.com/diegogurpegui/n8n-nodes-simplexity#readme",
   "author": {
-    "name": "Diego H. Gurpegui"
+    "name": "Diego H. Gurpegui",
+    "email": "your-email@example.com"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/diegogurpegui/n8n-nodes-simplexity.git"
+  },
+  "bugs": {
+    "url": "https://github.com/diegogurpegui/n8n-nodes-simplexity/issues"
   },
   "main": "n8n-index.js",
   "scripts": {

@@ -39,8 +39,8 @@ export class SimpleXityTrigger implements INodeType {
     icon: 'file:simplexity.svg',
     group: ['trigger'],
     version: 1,
-    subtitle: 'Triggers when a new message is received',
-    description: 'Triggers workflows when SimpleX messages are received',
+    subtitle: 'Triggers on SimpleX messages',
+    description: 'Triggers workflow on SimpleX chat events',
     defaults: {
       name: 'SimpleXity Trigger',
     },
