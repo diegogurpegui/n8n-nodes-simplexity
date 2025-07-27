@@ -22,7 +22,8 @@
   },
   "main": "n8n-index.js",
   "scripts": {
-    "build": "tsc && gulp build:icons",
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc && gulp build:icons",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
