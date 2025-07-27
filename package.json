@@ -1,11 +1,12 @@
 {
   "name": "n8n-nodes-simplexity",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "n8n nodes for SimpleX Chat integration",
   "keywords": [
     "n8n",
     "n8n-node",
     "n8n-custom-node",
+    "n8n-community-node-package",
     "simplex",
     "chat",
     "messaging"
@@ -34,11 +35,11 @@
   "n8n": {
     "n8nNodesApiVersion": 1,
     "credentials": [
-      "dist/credentials/SimpleXity.credentials.js"
+      "dist/credentials/SimplexityApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/SimpleX/SimpleXityTrigger.node.js",
-      "dist/nodes/SimpleX/SimpleXityAction.node.js"
+      "dist/nodes/Simplexity/SimplexityTrigger.node.js",
+      "dist/nodes/Simplexity/Simplexity.node.js"
     ]
   },
   "devDependencies": {
