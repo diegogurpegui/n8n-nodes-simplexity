@@ -20,7 +20,10 @@
     "type": "git",
     "url": "git+https://github.com/diegogurpegui/n8n-nodes-simplexity.git"
   },
-  "main": "n8n-index.js",
+  "bugs": {
+    "url": "https://github.com/diegogurpegui/n8n-nodes-simplexity/issues"
+  },
+  "main": "dist/index.js",
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc && gulp build:icons",

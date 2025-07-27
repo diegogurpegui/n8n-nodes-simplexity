@@ -22,6 +22,6 @@
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["credentials/**/*", "nodes/**/*"],
+  "include": ["credentials/**/*", "nodes/**/*", "index.ts"],
   "exclude": ["node_modules/**/*", "**/*.spec.ts"]
 } 

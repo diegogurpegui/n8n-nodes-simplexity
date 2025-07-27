@@ -148,4 +148,4 @@ npm run build
 
 ## Support
 
-For issues and questions, please open an [issue on GitHub]https://github.com/diegogurpegui/n8n-nodes-simplexity/issues).
+For issues and questions, please open an [issue on GitHub](https://github.com/diegogurpegui/n8n-nodes-simplexity/issues).
