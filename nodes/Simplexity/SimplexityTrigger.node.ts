@@ -32,7 +32,7 @@ interface SimplexityTriggerOutput extends IDataObject {
   }>;
 }
 
-export class SimpleXityTrigger implements INodeType {
+export class SimplexityTrigger implements INodeType {
   description: INodeTypeDescription = {
     displayName: 'SimpleXity Trigger',
     name: 'simplexityTrigger',
@@ -42,7 +42,7 @@ export class SimpleXityTrigger implements INodeType {
     subtitle: 'Triggers when a new message is received',
     description: 'Triggers workflows when SimpleX messages are received',
     defaults: {
-      name: 'SimpleXity Trigger',
+      name: 'simplexityTrigger',
     },
     inputs: [],
     outputs: [NodeConnectionType.Main],
