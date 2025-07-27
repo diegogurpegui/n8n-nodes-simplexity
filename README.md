@@ -13,6 +13,19 @@ This project provides a n8n node for integrating with SimpleX Chat, allowing you
 A SimpleX Chat CLI should be running.  
 For more information: https://github.com/simplex-chat/simplex-chat/blob/stable/docs/CLI.md
 
+### SimpleX Chat CLI installation
+This is a simple guide for getting the CLI running.
+
+First install the CLI with Docker  
+(More info: https://simplex.chat/docs/cli.html#using-docker)
+```sh
+git clone https://github.com/simplex-chat/simplex-chat.git
+cd simplex-chat
+git checkout stable
+DOCKER_BUILDKIT=1 docker build --output ~/.local/bin .
+```
+
+
 ## Installation
 
 You can follow the standard installation guide for n8n nodes.
@@ -58,21 +71,6 @@ The SimpleXity Action node allows you to send messages to SimpleX contacts:
 - **Contact ID**: The numeric ID of the contact to send the message to
 - **Message**: The text message to send
 
-## Usage Examples
-
-### Trigger Workflow
-
-1. Add a SimpleXity Trigger node to your workflow
-2. Configure the credential with your SimpleX server details
-3. Select the message types you want to trigger on
-4. The node will emit data when messages are received
-
-### Send Message Workflow
-
-1. Add a SimpleXity Action node to your workflow
-2. Configure the credential with your SimpleX server details
-3. Provide the contact ID and message
-4. The node will send the message and return success/error status
 
 ## Data Structure
 
@@ -114,16 +112,25 @@ The SimpleXity Action node returns:
 
 ```
 ├── credentials/
-│   └── SimpleXity.credentials.ts        # Credential definition
+│   └── SimplexityApi.credentials.ts     # Credential definition
 ├── nodes/
-│   └── SimpleX/
-│       ├── SimpleXityTrigger.node.ts    # Trigger node implementation
-│       ├── SimpleXitySendAction.node.ts # Action node implementation
+│   └── SimpleXity/
+│       ├── Simplexity.node.ts           # Main node implementation
+│       ├── Simplexity.node.json         # Main node configuration
+│       ├── SimplexityTrigger.node.ts    # Trigger node implementation
+│       ├── SimplexityTrigger.node.json  # Trigger node configuration
 │       └── simplexity.svg               # Node icon
+├── types/
+│   └── simplex.ts                       # TypeScript type definitions
 ├── package.json                         # Project dependencies
+├── package-lock.json                    # Dependency lock file
 ├── tsconfig.json                        # TypeScript configuration
 ├── n8n-index.ts                         # n8n node/credential export
-└── gulpfile.js                          # Build configuration
+├── gulpfile.js                          # Build configuration
+├── eslint.config.mts                    # ESLint configuration
+├── .prettierrc                          # Prettier configuration
+├── logger.ts                            # Logging utility
+└── bot-test.ts                          # Test file
 ```
 
 ### Building
@@ -132,21 +139,9 @@ The SimpleXity Action node returns:
 npm run build
 ```
 
-### Development Mode
-
-```bash
-npm run dev
-```
-
-## Prerequisites
-
-- n8n instance
-- SimpleX Chat server running
-- Node.js 16+ and npm
-
 ## License
 
-MIT
+[MIT](./LICENSE)
 
 ## Contributing
 
@@ -158,4 +153,4 @@ MIT
 
 ## Support
 
-For issues and questions, please open an issue on GitHub.
+For issues and questions, please open an [issue on GitHub]https://github.com/diegogurpegui/n8n-nodes-simplexity/issues).

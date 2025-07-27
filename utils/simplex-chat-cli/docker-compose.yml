@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  simplex-chat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: simplex-chat-cli
+    ports:
+      - '127.0.0.1:${SIMPLEX_PORT:-5225}:${SIMPLEX_PORT:-5225}'
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - SIMPLEX_LOG_LEVEL=${SIMPLEX_LOG_LEVEL:-warn}
+      - SIMPLEX_PORT=${SIMPLEX_PORT:-5225}
+      - SIMPLEX_BOT_NAME=${SIMPLEX_BOT_NAME:-n8n-bot}
+      - SIMPLEX_PROFILE_DIR=${SIMPLEX_PROFILE_DIR:-/home/simplex/.simplex}
+    # Start CLI using our custom script
+    command: ['/usr/local/bin/start-simplex.sh']
