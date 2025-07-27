@@ -1,5 +1,5 @@
 {
-  "node": "n8n-nodes-base.simplexity",
+  "node": "n8n-nodes-simplexity.simplexity",
   "nodeVersion": "0.1.0",
   "codexVersion": "1.0",
   "categories": ["Communication"],
