@@ -5,6 +5,7 @@ import {
   ITriggerFunctions,
   ITriggerResponse,
   NodeConnectionType,
+  NodeApiError,
 } from 'n8n-workflow';
 import { ChatClient } from 'simplex-chat';
 import {
@@ -30,6 +31,13 @@ interface SimplexityTriggerOutput extends IDataObject {
     file: SimpleXFile;
     meta: CIMeta;
   }>;
+  contact?: {
+    contactId: number;
+    profile: {
+      displayName: string;
+      fullName?: string;
+    };
+  };
 }
 
 export class SimplexityTrigger implements INodeType {
@@ -79,98 +87,157 @@ export class SimplexityTrigger implements INodeType {
 
   async trigger(this: ITriggerFunctions): Promise<ITriggerResponse> {
     const credentials = await this.getCredentials('simplexityApi');
-    const messageTypes = this.getNodeParameter('messageTypes', []) as string[];
 
-    const chat = await ChatClient.create(`ws://${credentials.host}:${credentials.port}`);
-
-    // Get or create bot address
-    let address = credentials.botAddress || (await chat.apiGetUserAddress());
-    if (!address) {
-      address = await chat.apiCreateUserAddress();
+    // Validate credentials
+    if (!credentials.host || !credentials.port) {
+      throw new NodeApiError(this.getNode(), {
+        message: 'Host and port are required in SimpleXity API credentials',
+      });
     }
 
-    // Enable automatic acceptance of contact connections
-    await chat.enableAddressAutoAccept();
+    const messageTypes = this.getNodeParameter('messageTypes', []) as string[];
 
-    const processIncomingMessages = async () => {
-      for await (const response of chat.msgQ) {
-        try {
-          const resp = (response instanceof Promise ? await response : response) as ChatResponse;
+    // Connection state management
+    let chat: ChatClient | null = null;
+    let isConnected = false;
+    let shouldStop = false;
 
-          // Check if this message type should trigger
-          if (!messageTypes.includes(resp.type)) {
-            continue;
-          }
+    const connect = async (): Promise<ChatClient> => {
+      try {
+        const chatClient = await ChatClient.create(`ws://${credentials.host}:${credentials.port}`);
+        isConnected = true;
 
-          let outputData: SimplexityTriggerOutput = {
-            messageType: resp.type,
-            timestamp: new Date().toISOString(),
-          };
-
-          switch (resp.type) {
-            case 'contactConnected': {
-              const { contact } = resp;
-              outputData = {
-                ...outputData,
-                contact: contact,
-              };
-              break;
-            }
-            case 'newChatItems': {
-              const messages: SimplexityTriggerOutput['messages'] = [];
-              for (const { chatInfo, chatItem } of resp.chatItems) {
-                // Only process direct messages
-                if (chatInfo.type !== ChatInfoType.Direct) continue;
-
-                const msg = ciContentText(chatItem.content);
-                if (msg) {
-                  messages.push({
-                    chatInfo: chatInfo,
-                    meta: chatItem.meta,
-                    message: msg,
-                  });
-                }
-              }
-              outputData = {
-                ...outputData,
-                messages,
-              };
-              break;
-            }
-            case 'rcvFileComplete': {
-              const file = (resp.chatItem.chatItem as ChatItem & { file: SimpleXFile }).file;
-
-              outputData = {
-                ...outputData,
-                files: [
-                  {
-                    chatInfo: resp.chatItem.chatInfo,
-                    meta: resp.chatItem.chatItem.meta,
-                    file: file,
-                  },
-                ],
-              };
-              break;
-            }
-          }
-
-          this.emit([[{ json: outputData }]]);
-        } catch (error) {
-          console.error('Error processing SimpleX message:', error);
+        // Get or create bot address
+        let address = credentials.botAddress || (await chatClient.apiGetUserAddress());
+        if (!address) {
+          address = await chatClient.apiCreateUserAddress();
         }
+
+        // Enable automatic acceptance of contact connections
+        await chatClient.enableAddressAutoAccept();
+
+        return chatClient;
+      } catch (error) {
+        isConnected = false;
+        console.error('Failed to connect to SimpleX:', error);
+        throw new NodeApiError(this.getNode(), {
+          message: `Failed to connect to SimpleX: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        });
       }
     };
 
-    // Start processing messages
-    processIncomingMessages();
+    const processIncomingMessages = async () => {
+      if (!chat) return;
+
+      try {
+        for await (const response of chat.msgQ) {
+          // Check if we should stop processing
+          if (shouldStop || !isConnected) {
+            break;
+          }
+
+          try {
+            const resp = (response instanceof Promise ? await response : response) as ChatResponse;
+
+            // Validate response format
+            if (!resp || typeof resp.type !== 'string') {
+              console.warn('Invalid response format:', resp);
+              continue;
+            }
+
+            // Check if this message type should trigger
+            if (!messageTypes.includes(resp.type)) {
+              continue;
+            }
+
+            let outputData: SimplexityTriggerOutput = {
+              messageType: resp.type,
+              timestamp: new Date().toISOString(),
+            };
+
+            switch (resp.type) {
+              case 'contactConnected': {
+                const { contact } = resp;
+                outputData = {
+                  ...outputData,
+                  contact: contact,
+                };
+                break;
+              }
+              case 'newChatItems': {
+                const messages: SimplexityTriggerOutput['messages'] = [];
+                for (const { chatInfo, chatItem } of resp.chatItems) {
+                  // Only process direct messages
+                  if (chatInfo.type !== ChatInfoType.Direct) continue;
+
+                  const msg = ciContentText(chatItem.content);
+                  if (msg) {
+                    messages.push({
+                      chatInfo: chatInfo,
+                      meta: chatItem.meta,
+                      message: msg,
+                    });
+                  }
+                }
+                outputData = {
+                  ...outputData,
+                  messages,
+                };
+                break;
+              }
+              case 'rcvFileComplete': {
+                const file = (resp.chatItem.chatItem as ChatItem & { file: SimpleXFile }).file;
+
+                outputData = {
+                  ...outputData,
+                  files: [
+                    {
+                      chatInfo: resp.chatItem.chatInfo,
+                      meta: resp.chatItem.chatItem.meta,
+                      file: file,
+                    },
+                  ],
+                };
+                break;
+              }
+            }
+
+            this.emit([[{ json: outputData }]]);
+          } catch (error) {
+            console.error('Error processing SimpleX message:', error);
+            // Continue processing other messages even if one fails
+          }
+        }
+      } catch (error) {
+        console.error('Error in message processing loop:', error);
+        isConnected = false;
+      }
+    };
+
+    // Initial connection
+    try {
+      chat = await connect();
+      // Start processing messages
+      processIncomingMessages();
+    } catch (error) {
+      console.error('Failed to initialize SimpleX connection:', error);
+      throw error;
+    }
 
     // Return trigger response
     return {
       closeFunction: async () => {
-        // Cleanup when trigger is stopped
+        shouldStop = true;
+        isConnected = false;
+
         if (chat) {
-          // Close the chat connection
-          // Note: ChatClient doesn't have a direct close method, but we can stop processing
+          try {
+            // Note: ChatClient doesn't have a direct close method
+            // The connection will be cleaned up when the process ends
+            console.log('SimpleXity Trigger stopped');
+          } catch (error) {
+            console.error('Error closing SimpleX connection:', error);
+          }
         }
       },
     };
