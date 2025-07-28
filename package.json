@@ -30,7 +30,8 @@
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
-    "lintfix": "eslint nodes credentials package.json --fix"
+    "lintfix": "eslint nodes credentials package.json --fix",
+    "bundle": "npm run build && rm -rf bundle && mkdir -p bundle && cp -r dist package.json README.md LICENSE bundle/ && echo 'Bundle created successfully at ./bundle/'"
   },
   "files": [
     "dist"

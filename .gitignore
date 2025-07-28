@@ -5,6 +5,7 @@ npm-debug.log*
 # Build output
 dist/
 build/
+bundle/
 
 # Environment variables
 .env
