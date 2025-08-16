@@ -104,6 +104,7 @@ export class SimplexityTrigger implements INodeType {
 
     const connect = async (): Promise<ChatClient> => {
       try {
+        console.debug(`Connecting to SimpleXity at ${credentials.host}:${credentials.port}`);
         const chatClient = await ChatClient.create(`ws://${credentials.host}:${credentials.port}`);
         isConnected = true;
 
