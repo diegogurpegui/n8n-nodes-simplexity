@@ -6,6 +6,7 @@ set -e
 # Default values for environment variables
 DEFAULT_LOG_LEVEL=${SIMPLEX_LOG_LEVEL:-"warn"}
 DEFAULT_PORT=${SIMPLEX_PORT:-"5225"}
+INTERNAL_PORT=$((DEFAULT_PORT + 1))  # Use next port for internal simplex-chat
 DEFAULT_BOT_NAME=${SIMPLEX_BOT_NAME:-"n8n-bot"}
 DEFAULT_PROFILE_DIR=${SIMPLEX_PROFILE_DIR:-"/home/simplex/.simplex"}
 
@@ -21,19 +22,23 @@ check_profile_exists() {
 # Function to start simplex-chat with common parameters
 start_simplex_chat() {
     # (By default it binds to localhost only)
+    echo "Starting simplex-chat on internal port $INTERNAL_PORT"
     /usr/local/bin/simplex-chat \
         --log-level "$DEFAULT_LOG_LEVEL" \
-        -p "$DEFAULT_PORT" \
+        -p "$INTERNAL_PORT" \
         -r \
         -a
 }
 
 # Function to start socat for port forwarding
 start_socat_forward() {
-    echo "Starting socat to forward traffic from 0.0.0.0:$DEFAULT_PORT to 127.0.0.1:$DEFAULT_PORT"
-    socat TCP-LISTEN:$DEFAULT_PORT,fork,reuseaddr TCP:127.0.0.1:$DEFAULT_PORT &
+    echo "Starting socat to forward traffic from 0.0.0.0:$DEFAULT_PORT to 127.0.0.1:$INTERNAL_PORT"
+    socat TCP-LISTEN:$DEFAULT_PORT,fork,reuseaddr TCP:127.0.0.1:$INTERNAL_PORT &
     SOCAT_PID=$!
     echo "Socat started with PID: $SOCAT_PID"
+    
+    # Wait a moment for socat to start
+    sleep 1
 }
 
 # Function to start simplex-chat with automatic profile creation
@@ -87,10 +92,11 @@ trap cleanup EXIT INT TERM
 # Main execution
 echo "Starting simplex-chat with configuration:"
 echo "  Log Level: $DEFAULT_LOG_LEVEL"
-echo "  Port: $DEFAULT_PORT"
+echo "  External Port: $DEFAULT_PORT"
+echo "  Internal Port: $INTERNAL_PORT"
 echo "  Bot Name: $DEFAULT_BOT_NAME"
 echo "  Profile Directory: $DEFAULT_PROFILE_DIR"
-echo "  Socat forwarding: 0.0.0.0:$DEFAULT_PORT -> 127.0.0.1:$DEFAULT_PORT"
+echo "  Socat forwarding: 0.0.0.0:$DEFAULT_PORT -> 127.0.0.1:$INTERNAL_PORT"
 
 # Check if profile exists
 if ! check_profile_exists; then
