@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: simplex-chat-cli
     ports:
-      - '127.0.0.1:${SIMPLEX_PORT:-5225}:${SIMPLEX_PORT:-5225}'
+      - '${SIMPLEX_PORT:-5225}:${SIMPLEX_PORT:-5225}'
     restart: unless-stopped
     env_file:
       - .env
