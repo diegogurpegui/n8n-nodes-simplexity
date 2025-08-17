@@ -31,6 +31,9 @@ start_simplex_chat() {
 start_simplex_with_auto_profile() {
     echo "No profile found. Creating profile automatically with bot name: $DEFAULT_BOT_NAME"
     
+    # Ensure the profile directory exists and has correct permissions
+    mkdir -p "$DEFAULT_PROFILE_DIR"
+    
     # Use a coprocess to handle the interactive input
     coproc SIMPLEX_PROC {
         start_simplex_chat

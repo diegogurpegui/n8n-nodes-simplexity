@@ -32,10 +32,19 @@ This directory contains a Docker setup for running the Simplex Chat CLI with con
    SIMPLEX_PROFILE_DIR=/home/simplex/.simplex
    ```
 
-3. Build and start the container:
+3. Set up proper permissions for the data directory:
+   ```bash
+   ./setup-permissions.sh
+   ```
+   
+   **Note**: This script will automatically detect your user's UID and GID, create the `simplex-data` directory, and set proper ownership. The container will be built with the correct user permissions.
+
+4. Build and start the container:
    ```bash
    docker-compose up --build -d
    ```
+   
+   **Note**: The `--build` flag is required on first run to build the container with the correct user permissions.
 
 ## Features
 
