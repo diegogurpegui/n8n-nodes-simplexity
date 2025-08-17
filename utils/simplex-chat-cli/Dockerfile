@@ -11,6 +11,9 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Install telnet
+RUN apt-get update && apt-get install -y telnet
+
 # Create directory for simplex-chat
 RUN mkdir -p /usr/local/bin
 
