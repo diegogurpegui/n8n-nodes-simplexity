@@ -27,6 +27,8 @@
   "scripts": {
     "clean": "rm -rf dist",
     "build": "npm run clean && tsc && gulp build:icons",
+    "build:bot-test": "tsc --project tsconfig.bot-test.json",
+    "start:bot-test": "npm run build:bot-test && node dist/bot-test.js",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
@@ -49,6 +51,7 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@types/eslint": "^9.6.1",
+    "@types/node": "^24.3.0",
     "@typescript-eslint/parser": "^8.37.0",
     "eslint": "^9.32.0",
     "eslint-plugin-n8n-nodes-base": "^1.16.3",
