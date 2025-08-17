@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-simplexity",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "n8n nodes for SimpleX Chat integration",
   "keywords": [
     "n8n",
