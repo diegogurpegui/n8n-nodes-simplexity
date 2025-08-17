@@ -71,7 +71,10 @@ async function run() {
   try {
     logger.info(`Starting bot connection to ${config.host}:${config.port}...`);
 
-    const chat = await ChatClient.create(`ws://${config.host}:${config.port}`);
+    const chat = await ChatClient.create(`ws://${config.host}:${config.port}`, {
+      qSize: 16,
+      tcpTimeout: 10_000,
+    });
     // this example assumes that you have initialized user profile for chat bot via terminal CLI
     const user = await chat.apiGetActiveUser();
     if (!user) {
