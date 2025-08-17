@@ -14,7 +14,7 @@ CURRENT_GID=$(id -g)
 echo "Current user UID: $CURRENT_UID, GID: $CURRENT_GID"
 
 # Set proper ownership to current user
-sudo chown -R $CURRENT_UID:$CURRENT_GID simplex-data
+chown -R $CURRENT_UID:$CURRENT_GID simplex-data
 
 # Set proper permissions
 chmod -R 755 simplex-data
