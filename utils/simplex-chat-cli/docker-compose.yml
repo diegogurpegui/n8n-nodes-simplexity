@@ -14,10 +14,18 @@ services:
       - SIMPLEX_PORT=${SIMPLEX_PORT:-5225}
       - SIMPLEX_BOT_NAME=${SIMPLEX_BOT_NAME:-n8n-bot}
       - SIMPLEX_PROFILE_DIR=${SIMPLEX_PROFILE_DIR:-/home/simplex/.simplex}
+    volumes:
+      - ./simplex-data:/home/simplex/.simplex
     # Start CLI using our custom script
     command: ['/usr/local/bin/start-simplex.sh']
     networks:
       - n8n_network
+    # healthcheck:
+    #   test: ["CMD", "telnet", "localhost", "5225"]
+    #   interval: 120s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
 
 
 networks:
