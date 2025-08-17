@@ -19,7 +19,6 @@ services:
       - SIMPLEX_PROFILE_DIR=${SIMPLEX_PROFILE_DIR:-/home/simplex/.simplex}
     volumes:
       - ./simplex-data:/home/simplex/.simplex
-    user: "${USER_UID:-1000}:${USER_GID:-1000}"
     # Start CLI using our custom script
     command: ['/usr/local/bin/start-simplex.sh']
     networks:
