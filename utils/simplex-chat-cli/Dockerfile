@@ -22,13 +22,8 @@ RUN wget -O /usr/local/bin/simplex-chat \
     https://github.com/simplex-chat/simplex-chat/releases/download/v6.4.0/simplex-chat-ubuntu-24_04-x86-64 \
     && chmod +x /usr/local/bin/simplex-chat
 
-# Create a non-root user for running simplex-chat with UID 1000
-# This can be overridden at runtime with --build-arg
-ARG USER_UID=1000
-ARG USER_GID=1000
-
-RUN groupadd -g $USER_GID simplex && \
-    useradd -m -s /bin/bash -u $USER_UID -g $USER_GID simplex
+# Create a non-root user for running simplex-chat
+RUN useradd -m -s /bin/bash simplex
 
 # Create the .simplex directory and set proper ownership
 RUN mkdir -p /home/simplex/.simplex && chown -R simplex:simplex /home/simplex/.simplex
