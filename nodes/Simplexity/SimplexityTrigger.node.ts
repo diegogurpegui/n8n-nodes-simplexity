@@ -137,6 +137,7 @@ export class SimplexityTrigger implements INodeType {
         for await (const response of chat.msgQ) {
           // Check if we should stop processing
           if (shouldStop || !isConnected) {
+            console.debug('Stopping message processing');
             break;
           }
 
@@ -240,8 +241,8 @@ export class SimplexityTrigger implements INodeType {
 
         if (chat) {
           try {
-            // Note: ChatClient doesn't have a direct close method
             // The connection will be cleaned up when the process ends
+            await chat.disconnect();
             console.log('SimpleXity Trigger stopped');
           } catch (error) {
             console.error('Error closing SimpleX connection:', error);
