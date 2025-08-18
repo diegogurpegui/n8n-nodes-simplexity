@@ -128,7 +128,10 @@ export class SimplexityTrigger implements INodeType {
     };
 
     const processIncomingMessages = async () => {
-      if (!chat) return;
+      if (!chat) {
+        console.error('No chat client found');
+        return;
+      }
 
       try {
         for await (const response of chat.msgQ) {
@@ -148,6 +151,7 @@ export class SimplexityTrigger implements INodeType {
 
             // Check if this message type should trigger
             if (!messageTypes.includes(resp.type)) {
+              console.debug(`Skipping message type: ${resp.type}`);
               continue;
             }
 
@@ -169,7 +173,10 @@ export class SimplexityTrigger implements INodeType {
                 const messages: SimplexityTriggerOutput['messages'] = [];
                 for (const { chatInfo, chatItem } of resp.chatItems) {
                   // Only process direct messages
-                  if (chatInfo.type !== ChatInfoType.Direct) continue;
+                  if (chatInfo.type !== ChatInfoType.Direct) {
+                    console.debug(`Skipping message type: ${chatInfo.type}`);
+                    continue;
+                  }
 
                   const msg = ciContentText(chatItem.content);
                   if (msg) {
