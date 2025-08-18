@@ -26,7 +26,6 @@ start_simplex_chat() {
     /usr/local/bin/simplex-chat \
         --log-level "$DEFAULT_LOG_LEVEL" \
         -p "$INTERNAL_PORT" \
-        -r \
         -a
 }
 
