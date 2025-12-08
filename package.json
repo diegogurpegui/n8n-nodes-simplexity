@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-simplexity",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "n8n nodes for SimpleX Chat integration",
   "keywords": [
     "n8n",
@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
+    "@simplex-chat/types": "^0.1.0",
     "@types/eslint": "^9.6.1",
     "@types/node": "^24.3.0",
     "@typescript-eslint/parser": "^8.37.0",
@@ -66,6 +67,6 @@
     "simplex-chat": "^0.3.0"
   },
   "peerDependencies": {
-    "n8n-workflow": "*"
+    "n8n-workflow": "^1.82.0"
   }
 }

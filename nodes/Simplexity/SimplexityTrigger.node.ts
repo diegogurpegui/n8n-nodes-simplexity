@@ -8,28 +8,25 @@ import {
   NodeApiError,
 } from 'n8n-workflow';
 import { ChatClient } from 'simplex-chat';
-import {
-  ciContentText,
-  ChatInfoType,
-  ChatResponse,
-  ChatInfo,
-  ChatItem,
-  CIMeta,
-} from 'simplex-chat/dist/response';
-import { SimpleXFile } from '../../types/simplex';
+// import { ciContentText } from 'simplex-chat/dist/response';
+import type { T, ChatResponse } from '@simplex-chat/types';
+
+function isAudioFile(fileName: string): boolean {
+  return /\.(ogg|m4a|mp3|wav|opus|aac)$/i.test(fileName);
+}
 
 interface SimplexityTriggerOutput extends IDataObject {
   messageType: string;
   timestamp: string;
   messages?: Array<{
-    chatInfo: ChatInfo;
+    chatInfo: T.ChatInfo;
     message: string;
-    meta: CIMeta;
+    meta: T.CIMeta;
   }>;
   files?: Array<{
-    chatInfo: ChatInfo;
-    file: SimpleXFile;
-    meta: CIMeta;
+    chatInfo: T.ChatInfo;
+    file: T.CIFile;
+    meta: T.CIMeta;
   }>;
   contact?: {
     contactId: number;
@@ -102,20 +99,39 @@ export class SimplexityTrigger implements INodeType {
     let isConnected = false;
     let shouldStop = false;
 
+    /**
+     * Connect to the SimpleXity server and get the active user.
+     * @returns The chat client.
+     */
     const connect = async (): Promise<ChatClient> => {
       try {
         console.debug(`Connecting to SimpleXity at ${credentials.host}:${credentials.port}`);
         const chatClient = await ChatClient.create(`ws://${credentials.host}:${credentials.port}`);
         isConnected = true;
 
+        let activeUser = await chatClient.apiGetActiveUser();
+        if (!activeUser) {
+          console.debug('No active user found, creating new one...');
+          activeUser = await chatClient.apiCreateActiveUser();
+        }
+
+        console.debug('Active user:', {
+          displayName: activeUser.profile.displayName,
+          userId: activeUser.userId,
+        });
+
         // Get or create bot address
-        let address = credentials.botAddress || (await chatClient.apiGetUserAddress());
+        let address =
+          credentials.botAddress || (await chatClient.apiGetUserAddress(activeUser.userId));
         if (!address) {
-          address = await chatClient.apiCreateUserAddress();
+          address = await chatClient.apiCreateUserAddress(activeUser.userId);
+          console.debug(`Created new bot address: ${address}`);
+        } else {
+          console.debug(`Using existing bot address: ${address}`);
         }
 
         // Enable automatic acceptance of contact connections
-        await chatClient.enableAddressAutoAccept();
+        await chatClient.enableAddressAutoAccept(activeUser.userId);
 
         return chatClient;
       } catch (error) {
@@ -162,24 +178,29 @@ export class SimplexityTrigger implements INodeType {
             };
 
             switch (resp.type) {
-              case 'contactConnected': {
-                const { contact } = resp;
-                outputData = {
-                  ...outputData,
-                  contact: contact,
-                };
-                break;
-              }
+              // case 'contactConnected': {
+              //   const { contact } = resp;
+              //   outputData = {
+              //     ...outputData,
+              //     contact: contact,
+              //   };
+              //   break;
+              // }
               case 'newChatItems': {
                 const messages: SimplexityTriggerOutput['messages'] = [];
                 for (const { chatInfo, chatItem } of resp.chatItems) {
                   // Only process direct messages
-                  if (chatInfo.type !== ChatInfoType.Direct) {
+                  if (chatInfo.type !== 'direct') {
                     console.debug(`Skipping message type: ${chatInfo.type}`);
                     continue;
                   }
 
-                  const msg = ciContentText(chatItem.content);
+                  // const msg = ciContentText(chatItem.content as T.CIContent.RcvMsgContent);
+                  if (chatItem.content.type !== 'rcvMsgContent') {
+                    console.error('Invalid message content type:', chatItem.content.type);
+                    continue;
+                  }
+                  const msg = (chatItem.content as T.CIContent.RcvMsgContent).msgContent.text;
                   if (msg) {
                     messages.push({
                       chatInfo: chatInfo,
@@ -194,18 +215,41 @@ export class SimplexityTrigger implements INodeType {
                 };
                 break;
               }
-              case 'rcvFileComplete': {
-                const file = (resp.chatItem.chatItem as ChatItem & { file: SimpleXFile }).file;
+              case 'rcvFileAccepted': {
+                const file = resp.chatItem.chatItem.file;
+
+                if (!file) {
+                  console.error('No file in "rcvFileAccepted" message');
+                  break;
+                }
+
+                // Accept audio files automatically
+                let fileReceived: T.CIFile | undefined = undefined;
+                if (isAudioFile(file.fileName) && chat) {
+                  try {
+                    const fileChatItem = await chat.apiReceiveFile(file.fileId);
+                    fileReceived = fileChatItem.chatItem.file;
+                    console.debug('Audio file received:');
+                  } catch (error) {
+                    console.error('Error receiving audio file:', error);
+                  }
+                }
+
+                if (!fileReceived) {
+                  console.error('No file received in "rcvFileAccepted" message');
+                }
 
                 outputData = {
                   ...outputData,
-                  files: [
-                    {
-                      chatInfo: resp.chatItem.chatInfo,
-                      meta: resp.chatItem.chatItem.meta,
-                      file: file,
-                    },
-                  ],
+                  files: fileReceived
+                    ? [
+                        {
+                          chatInfo: resp.chatItem.chatInfo,
+                          meta: resp.chatItem.chatItem.meta,
+                          file: fileReceived,
+                        },
+                      ]
+                    : [],
                 };
                 break;
               }

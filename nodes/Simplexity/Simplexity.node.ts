@@ -6,7 +6,7 @@ import {
   NodeConnectionType,
 } from 'n8n-workflow';
 import { ChatClient } from 'simplex-chat';
-import { ChatType } from 'simplex-chat/dist/command';
+import { T } from '@simplex-chat/types';
 
 export class Simplexity implements INodeType {
   description: INodeTypeDescription = {
@@ -60,7 +60,7 @@ export class Simplexity implements INodeType {
         const contactId = this.getNodeParameter('contactId', i) as number;
         const message = this.getNodeParameter('message', i) as string;
 
-        const resultItems = await chat.apiSendTextMessage(ChatType.Direct, contactId, message);
+        const resultItems = await chat.apiSendTextMessage(T.ChatType.Direct, contactId, message);
 
         returnData.push({
           json: {

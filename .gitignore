@@ -43,3 +43,6 @@ pids
 
 # Output of 'npm pack'
 *.tgz
+
+# SimpleX Chat CLI
+utils/simplex-chat-cli/simplex-data/
