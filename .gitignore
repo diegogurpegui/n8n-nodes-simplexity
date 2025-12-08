@@ -27,9 +27,10 @@ bundle/
 ehthumbs.db
 Thumbs.db
 
-# Logs
+# Logs & var
 logs
 *.log
+var
 
 # Runtime data
 pids

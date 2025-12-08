@@ -63,7 +63,7 @@
     "typescript-eslint": "^8.38.0"
   },
   "dependencies": {
-    "simplex-chat": "^0.2.1"
+    "simplex-chat": "^0.3.0"
   },
   "peerDependencies": {
     "n8n-workflow": "*"
