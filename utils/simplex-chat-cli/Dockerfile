@@ -20,7 +20,7 @@ RUN mkdir -p /usr/local/bin
 
 # Download and install simplex-chat CLI
 RUN wget -O /usr/local/bin/simplex-chat \
-    https://github.com/simplex-chat/simplex-chat/releases/download/v6.4.0/simplex-chat-ubuntu-24_04-x86-64 \
+    https://github.com/simplex-chat/simplex-chat/releases/download/v6.4.7/simplex-chat-ubuntu-24_04-x86_64 \
     && chmod +x /usr/local/bin/simplex-chat
 
 # Create a non-root user for running simplex-chat
