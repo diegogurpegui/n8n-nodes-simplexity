@@ -131,7 +131,16 @@ export class SimplexityTrigger implements INodeType {
         }
 
         // Enable automatic acceptance of contact connections
-        await chatClient.enableAddressAutoAccept(activeUser.userId);
+        // This may fail if already enabled or if the server doesn't support it
+        try {
+          await chatClient.enableAddressAutoAccept(activeUser.userId);
+          console.debug('Enabled automatic address acceptance');
+        } catch (error) {
+          console.warn(
+            `Failed to enable automatic address acceptance: ${error instanceof Error ? error.message : 'Unknown error'}. Continuing anyway...`
+          );
+          // Don't fail the connection if this doesn't work - the bot can still function
+        }
 
         return chatClient;
       } catch (error) {
