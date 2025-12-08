@@ -74,6 +74,7 @@ export class Simplexity implements INodeType {
           },
         });
       } catch (error) {
+        console.error('Error sending message:', error);
         returnData.push({
           json: {
             success: false,

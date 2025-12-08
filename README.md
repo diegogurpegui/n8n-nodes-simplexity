@@ -2,7 +2,6 @@
 
 This project provides a n8n node for integrating with SimpleX Chat, allowing you to trigger workflows on incoming messages and send messages to contacts.
 
-
 ## Features
 
 - **SimpleXity Trigger Node**: Listens for incoming SimpleX messages and triggers workflows
@@ -10,15 +9,17 @@ This project provides a n8n node for integrating with SimpleX Chat, allowing you
 - **Credential Management**: Secure storage of SimpleX connection settings
 
 ## Requirements
-A SimpleX Chat CLI should be running.  
+
+A SimpleX Chat CLI should be running.
 
 ### Option 1: Packaged Docker (recommended)
+
 This repository contains a Dockerfile and docker-compose.yml ready to run the SimpleX Chat Cli.  
 Check the corresponding [README.md](./utils/simplex-chat-cli/README.md) file
 
 ### Option 2: Manual
-For more information: https://github.com/simplex-chat/simplex-chat/blob/stable/docs/CLI.md
 
+For more information: https://github.com/simplex-chat/simplex-chat/blob/stable/docs/CLI.md
 
 ## Installation
 
@@ -37,7 +38,6 @@ Steps for installing locally:
    ```
 4. Copy the `dist` folder to your n8n custom nodes directory
 
-
 ## Configuration
 
 ### Credentials
@@ -55,9 +55,9 @@ You can setup the following fields:
 
 The SimpleXity Trigger node listens for incoming SimpleX messages and can be configured to trigger on:
 
-- **Text Messages**: New chat items with text content
-- **Contact Connected**: When a new contact connects
-- **File Received**: When a file is received
+- **Text Messages** (`newChatItems`): New chat items with text content. Only processes direct messages with text content.
+- **Contact Connected** (`contactConnected`): When a new contact connects (currently not implemented in code)
+- **File Received** (`rcvFileComplete`): When a file is received. The code handles `rcvFileAccepted` events and automatically accepts audio files (ogg, m4a, mp3, wav, opus, aac)
 
 #### SimpleXity Action Node
 
@@ -66,28 +66,45 @@ The SimpleXity Action node allows you to send messages to SimpleX contacts:
 - **Contact ID**: The numeric ID of the contact to send the message to
 - **Message**: The text message to send
 
-
 ## Data Structure
 
 ### Trigger Output
 
-The SimpleXity Trigger node outputs data in the following format:
+The SimpleXity Trigger node outputs data based on the message type:
+
+#### For `newChatItems` messages:
 
 ```json
 {
   "messageType": "newChatItems",
   "timestamp": "2024-01-01T12:00:00.000Z",
-  "event": "new_messages",
   "messages": [
     {
-      "contactId": 123,
-      "contactName": "John Doe",
-      "message": "Hello!",
-      "messageId": 456
+      "chatInfo": "<T.ChatInfo>",
+      "chatItem": "<T.ChatItem>",
+      "message": "string"
     }
   ]
 }
 ```
+
+#### For `rcvFileAccepted` messages:
+
+```json
+{
+  "messageType": "rcvFileAccepted",
+  "timestamp": "2024-01-01T12:00:00.000Z",
+  "files": [
+    {
+      "chatInfo": "<T.ChatInfo>",
+      "chatItem": "<T.ChatItem>",
+      "file": "<T.CIFile>"
+    }
+  ]
+}
+```
+
+**Types used:** `T.ChatInfo`, `T.ChatItem`, `T.CIFile`, `T.CIMeta` from `@simplex-chat/types`
 
 ### Action Output
 
@@ -97,7 +114,22 @@ The SimpleXity Action node returns:
 {
   "success": true,
   "contactId": 123,
+  "result": [
+    {
+      "infoType": "string",
+      "itemChatDir": "string"
+    }
+  ],
   "timestamp": "2024-01-01T12:00:00.000Z"
+}
+```
+
+Or on error:
+
+```json
+{
+  "success": false,
+  "error": "string"
 }
 ```
 
@@ -109,23 +141,28 @@ The SimpleXity Action node returns:
 ├── credentials/
 │   └── SimplexityApi.credentials.ts     # Credential definition
 ├── nodes/
-│   └── SimpleXity/
-│       ├── Simplexity.node.ts           # Main node implementation
-│       ├── Simplexity.node.json         # Main node configuration
+│   └── Simplexity/
+│       ├── Simplexity.node.ts           # Action node implementation
+│       ├── Simplexity.node.json         # Action node configuration
 │       ├── SimplexityTrigger.node.ts    # Trigger node implementation
 │       ├── SimplexityTrigger.node.json  # Trigger node configuration
-│       └── simplexity.svg               # Node icon
-├── types/
-│   └── simplex.ts                       # TypeScript type definitions
+│       ├── simplexity.svg               # Node icon
+│       └── simplexity.png               # Node icon (PNG)
+├── utils/
+│   └── simplex-chat-cli/                # Docker setup for SimpleX CLI
+│       ├── Dockerfile
+│       ├── docker-compose.yml
+│       └── README.md
 ├── package.json                         # Project dependencies
 ├── package-lock.json                    # Dependency lock file
 ├── tsconfig.json                        # TypeScript configuration
-├── n8n-index.ts                         # n8n node/credential export
+├── tsconfig.bot-test.json              # TypeScript config for bot tests
 ├── gulpfile.js                          # Build configuration
 ├── eslint.config.mts                    # ESLint configuration
 ├── .prettierrc                          # Prettier configuration
 ├── logger.ts                            # Logging utility
-└── bot-test.ts                          # Test file
+├── bot-test.ts                          # Test file
+└── index.js                             # Entry point
 ```
 
 ### Building

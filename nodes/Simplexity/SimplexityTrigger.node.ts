@@ -20,13 +20,13 @@ interface SimplexityTriggerOutput extends IDataObject {
   timestamp: string;
   messages?: Array<{
     chatInfo: T.ChatInfo;
+    chatItem: T.ChatItem;
     message: string;
-    meta: T.CIMeta;
   }>;
   files?: Array<{
     chatInfo: T.ChatInfo;
+    chatItem: T.ChatItem;
     file: T.CIFile;
-    meta: T.CIMeta;
   }>;
   contact?: {
     contactId: number;
@@ -213,7 +213,7 @@ export class SimplexityTrigger implements INodeType {
                   if (msg) {
                     messages.push({
                       chatInfo: chatInfo,
-                      meta: chatItem.meta,
+                      chatItem: chatItem,
                       message: msg,
                     });
                   }
@@ -254,7 +254,7 @@ export class SimplexityTrigger implements INodeType {
                     ? [
                         {
                           chatInfo: resp.chatItem.chatInfo,
-                          meta: resp.chatItem.chatItem.meta,
+                          chatItem: resp.chatItem.chatItem,
                           file: fileReceived,
                         },
                       ]
