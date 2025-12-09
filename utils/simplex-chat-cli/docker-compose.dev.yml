@@ -1,0 +1,7 @@
+services:
+  simplex-chat:
+    extends:
+      file: docker-compose.base.yml
+      service: simplex-chat
+    # dummy command to keep the container running
+    command: ["sleep", "infinity"]

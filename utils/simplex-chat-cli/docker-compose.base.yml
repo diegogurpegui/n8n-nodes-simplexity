@@ -1,0 +1,27 @@
+services:
+  simplex-chat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USER_UID: ${USER_UID:-1000}
+        USER_GID: ${USER_GID:-1000}
+    container_name: simplex-chat-cli
+    ports:
+      - '${SIMPLEX_PORT:-5225}:${SIMPLEX_PORT:-5225}'
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - SIMPLEX_LOG_LEVEL=${SIMPLEX_LOG_LEVEL:-warn}
+      - SIMPLEX_PORT=${SIMPLEX_PORT:-5225}
+      - SIMPLEX_BOT_NAME=${SIMPLEX_BOT_NAME:-n8n-bot}
+      - SIMPLEX_PROFILE_DIR=${SIMPLEX_PROFILE_DIR:-/home/simplex/.simplex}
+    volumes:
+      - ./simplex-data:/home/simplex/.simplex
+    # healthcheck:
+    #   test: ["CMD", "telnet", "localhost", "5225"]
+    #   interval: 120s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 40s
