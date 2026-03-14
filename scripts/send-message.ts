@@ -2,8 +2,8 @@
  * Test script to send a message via SimpleX.
  * Emulates Simplexity.node.ts behavior for server-side debugging.
  *
- * Usage:
- *   npx ts-node scripts/send-message.ts [options]
+ * Usage (after npm run build):
+ *   npm run send-message -- [options]
  *   node dist/scripts/send-message.js [options]
  *
  * Options (CLI or env):
