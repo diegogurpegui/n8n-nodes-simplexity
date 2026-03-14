@@ -74,8 +74,9 @@ export class Simplexity implements INodeType {
           },
         });
       } catch (error) {
-        const errorStr = JSON.stringify(error, null, 2);
-        console.error('Error sending message:', {error, errorStr});
+        console.error('Error sending message:');
+        console.error('  Message:', error instanceof Error ? error.message : String(error));
+        console.error('  Response payload:', formatError(error));
         returnData.push({
           json: {
             success: false,
@@ -87,4 +88,12 @@ export class Simplexity implements INodeType {
 
     return [returnData];
   }
+}
+
+function formatError(error: unknown): string {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const resp = (error as { response?: unknown }).response;
+    return JSON.stringify(resp, null, 2);
+  }
+  return String(error);
 }
