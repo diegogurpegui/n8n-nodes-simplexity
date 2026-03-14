@@ -22,10 +22,13 @@ check_profile_exists() {
 # Function to start simplex-chat with common parameters
 start_simplex_chat() {
     # (By default it binds to localhost only)
+    # "-y" Automatically confirm "up" database migrations
+    # "-a" Automatically accept files up to 1MB
     echo "Starting simplex-chat on internal port $INTERNAL_PORT"
     /usr/local/bin/simplex-chat \
         --log-level "$DEFAULT_LOG_LEVEL" \
         -p "$INTERNAL_PORT" \
+        -y \
         -a
 }
 
