@@ -1,0 +1,22 @@
+---
+description: SimpleX Chat integration context and references for n8n nodes
+globs: "**/Simplexity/**"
+alwaysApply: false
+---
+
+# SimpleX Chat Integration
+
+When working with SimpleX Chat in this project, consult **[docs/SIMPLEX_CHAT_REFERENCES.md](docs/SIMPLEX_CHAT_REFERENCES.md)** for:
+
+- Package usage (`simplex-chat`, `@simplex-chat/types`)
+- Official docs, CLI, and API links
+- Debugging checklist and event types
+- Project-specific patterns (trigger events, send API, credentials)
+
+## Key Points
+
+- Use `ChatClient` from `simplex-chat` for WebSocket/API; `@simplex-chat/types` for `T.ChatInfo`, `T.ChatItem`, `T.CIFile`, `T.ChatType`, `ChatResponse`
+- WebSocket/CLI JSON protocol is not fully documented; rely on the TypeScript client and types
+- Trigger events: `newChatItems`, `contactConnected`, `rcvFileComplete`, `rcvFileAccepted`
+- Send messages: `chat.apiSendTextMessage(T.ChatType.Direct, contactId, message)`
+- Credentials: see `credentials/SimplexityApi.credentials.ts`
