@@ -29,6 +29,8 @@
     "build": "npm run clean && tsc && gulp build:icons",
     "build:bot-test": "tsc --project tsconfig.bot-test.json",
     "start:bot-test": "npm run build:bot-test && node dist/bot-test.js",
+    "build:scripts": "tsc --project tsconfig.scripts.json",
+    "send-message": "npm run build:scripts && node dist/scripts/send-message.js",
     "dev": "tsc --watch",
     "format": "prettier nodes credentials --write",
     "lint": "eslint nodes credentials package.json",
