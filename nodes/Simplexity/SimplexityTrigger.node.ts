@@ -67,10 +67,6 @@ export class SimplexityTrigger implements INodeType {
         type: 'multiOptions',
         options: [
           {
-            name: 'Text Messages',
-            value: 'newChatItems',
-          },
-          {
             name: 'Contact Connected',
             value: 'contactConnected',
           },
@@ -87,20 +83,24 @@ export class SimplexityTrigger implements INodeType {
             value: 'rcvFileAccepted',
           },
           {
+            name: 'File Received',
+            value: 'rcvFileComplete',
+          },
+          {
             name: 'File Transfer Started',
             value: 'rcvFileStart',
           },
           {
-            name: 'File Received',
-            value: 'rcvFileComplete',
+            name: 'Message Deleted',
+            value: 'chatItemDeleted',
           },
           {
             name: 'Message Updated',
             value: 'chatItemUpdated',
           },
           {
-            name: 'Message Deleted',
-            value: 'chatItemDeleted',
+            name: 'Text Messages',
+            value: 'newChatItems',
           },
         ],
         default: ['newChatItems'],
