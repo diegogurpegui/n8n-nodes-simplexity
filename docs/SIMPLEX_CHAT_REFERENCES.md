@@ -62,7 +62,7 @@ This project uses:
 
 - **Trigger events (selectable):** `newChatItems`, `contactConnected`, `contactConnecting`, `receivedContactRequest`, `rcvFileAccepted`, `rcvFileStart`, `rcvFileComplete`, `chatItemUpdated`, `chatItemDeleted`
 - **newChatItems content types:** text, link, voice, file, image, video. Voice/audio messages have `msgContent.type === 'voice'` (text may be empty). File invitations use `content.type === 'rcvFileInvitation'`.
-- **Audio flow:** Voice message → `newChatItems` (voice metadata) and/or `rcvFileAccepted` (file offer) → accept via `apiReceiveFile` → `rcvFileComplete` (file ready).
+- **Audio flow:** Voice message → `newChatItems` with `rcvFileInvitation` (file offer) → call `apiReceiveFile(fileId)` to accept → `rcvFileAccepted` (notification) → `rcvFileComplete` (file ready). Do not call `apiReceiveFile` on `rcvFileAccepted`; it causes "error receiving file".
 - **Debug logging:** Trigger logs `[SimpleXity]` prefixed messages; set log level to debug to see raw response structure.
 - **Action:** Uses `chat.apiSendTextMessage(T.ChatType.Direct, contactId, message)`
 - **Credentials:** Host, port, optional bot address – see `credentials/SimplexityApi.credentials.ts`
