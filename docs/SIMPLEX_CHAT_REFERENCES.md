@@ -62,7 +62,8 @@ This project uses:
 
 - **Trigger events (selectable):** `newChatItems`, `contactConnected`, `contactConnecting`, `receivedContactRequest`, `rcvFileAccepted`, `rcvFileStart`, `rcvFileComplete`, `chatItemUpdated`, `chatItemDeleted`
 - **newChatItems content types:** text, link, voice, file, image, video. Voice/audio messages have `msgContent.type === 'voice'` (text may be empty). File invitations use `content.type === 'rcvFileInvitation'`.
-- **Audio flow:** Voice message → `newChatItems` with `rcvFileInvitation` (file offer) → call `apiReceiveFile(fileId)` to accept → `rcvFileAccepted` (notification) → `rcvFileComplete` (file ready). Do not call `apiReceiveFile` on `rcvFileAccepted`; it causes "error receiving file".
+- **Audio flow:** Voice message → `newChatItems` with voice content and `chatItem.file.fileStatus.type === 'rcvInvitation'` → call `apiReceiveFile(fileId)` to accept → `rcvFileComplete` (file ready with filePath). Also: `rcvFileInvitation` content type (separate from voice) can have fileId. Do not call `apiReceiveFile` on `rcvFileAccepted`; it causes "error receiving file".
+- **Binary output:** Set "File Base Path" in credentials to the SimpleX profile directory (e.g. `/home/simplex/.simplex`). When `rcvFileComplete` provides filePath, the trigger reads the file and outputs it as binary `data` for downstream nodes (e.g. speech-to-text).
 - **Debug logging:** Trigger logs `[SimpleXity]` prefixed messages; set log level to debug to see raw response structure.
 - **Action:** Uses `chat.apiSendTextMessage(T.ChatType.Direct, contactId, message)`
 - **Credentials:** Host, port, optional bot address – see `credentials/SimplexityApi.credentials.ts`

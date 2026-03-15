@@ -28,7 +28,14 @@ export class SimplexityApi implements ICredentialType {
       type: 'string',
       default: '',
       description: 'SimpleX CLI bot address (optional - will be created if not provided)',
-      // required: false,
+    },
+    {
+      displayName: 'File Base Path',
+      name: 'fileBasePath',
+      type: 'string',
+      default: '/home/node/.n8n/temp',
+      description:
+        'Path to SimpleX profile directory where received files are stored. Required for binary output. If rcvFileComplete provides an absolute path, this is ignored.',
     },
   ];
 }
