@@ -529,23 +529,22 @@ export class SimplexityTrigger implements INodeType {
               }
             }
 
-            // Add binary for files when filePath is available and fileBasePath is configured
+            // Add binary for files when filePath is available
             let emitPayload: Array<{
               json: SimplexityTriggerOutput;
               binary?: Record<string, unknown>;
             }> = [{ json: outputData }];
             const fileBasePath = (credentials as { fileBasePath?: string }).fileBasePath?.trim();
             const firstFile = outputData.files?.[0];
-            const filePath = firstFile?.file
-              ? (firstFile.file as { filePath?: string }).filePath
-              : undefined;
-            const fileName =
-              firstFile?.file && 'fileName' in firstFile.file
-                ? (firstFile.file as { fileName?: string }).fileName
-                : 'file';
-            if (filePath && fileBasePath) {
+            const fileObj = firstFile?.file as
+              | { filePath?: string; fileSource?: { filePath?: string }; fileName?: string }
+              | undefined;
+            const filePath = fileObj?.filePath ?? fileObj?.fileSource?.filePath;
+            const fileName = fileObj?.fileName ?? 'file';
+            const canReadBinary = filePath && (filePath.startsWith('/') || !!fileBasePath);
+            if (canReadBinary && filePath) {
               try {
-                const absPath = filePath.startsWith('/') ? filePath : join(fileBasePath, filePath);
+                const absPath = filePath.startsWith('/') ? filePath : join(fileBasePath!, filePath);
                 const buffer = await readFile(absPath);
                 const binaryData = await this.helpers.prepareBinaryData(buffer, fileName || 'file');
                 emitPayload = [{ json: outputData, binary: { data: binaryData } }];
