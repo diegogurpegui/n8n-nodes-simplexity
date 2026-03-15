@@ -52,6 +52,7 @@ This directory contains a Docker setup for running the Simplex Chat CLI with con
 - **Profile Detection**: Automatically detects if a simplex profile exists
 - **First Run Setup**: If no profile exists, creates one with the specified bot name
 - **Persistent Storage**: Profile data persists between container restarts
+- **File Server**: HTTP server on port 8090 to serve received files to n8n when running in separate containers (no shared volume needed)
 
 ## Environment Variables
 
@@ -59,6 +60,7 @@ This directory contains a Docker setup for running the Simplex Chat CLI with con
 |----------|---------|-------------|
 | `SIMPLEX_LOG_LEVEL` | `warn` | Logging level (debug, info, warn, error) |
 | `SIMPLEX_PORT` | `5225` | Port for the simplex-chat server |
+| `SIMPLEX_FILE_PORT` | `8090` | Port for the file server (exposed for n8n to fetch received files) |
 | `SIMPLEX_BOT_NAME` | `n8n-bot` | Bot name for initial profile creation |
 | `SIMPLEX_PROFILE_DIR` | `/home/simplex/.simplex` | Directory for simplex profiles |
 
@@ -69,4 +71,6 @@ The container will automatically:
 2. If not, create one with the specified bot name
 3. Start the simplex-chat server with the configured settings
 
-The server will be available at `http://localhost:5225` (or your configured port). 
+The server will be available at `http://localhost:5225` (or your configured port).
+
+When n8n runs in a separate container, set the credential's **File Server Port** to 8090 (same host as WebSocket) so the trigger can fetch received files for binary output. 

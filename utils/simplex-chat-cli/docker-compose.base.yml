@@ -9,6 +9,7 @@ services:
     container_name: simplex-chat-cli
     ports:
       - '${SIMPLEX_PORT:-5225}:${SIMPLEX_PORT:-5225}'
+      - '${SIMPLEX_FILE_PORT:-8090}:8090'
     restart: unless-stopped
     env_file:
       - .env
@@ -17,6 +18,7 @@ services:
       - SIMPLEX_PORT=${SIMPLEX_PORT:-5225}
       - SIMPLEX_BOT_NAME=${SIMPLEX_BOT_NAME:-n8n-bot}
       - SIMPLEX_PROFILE_DIR=${SIMPLEX_PROFILE_DIR:-/home/simplex/.simplex}
+      - FILE_SERVER_PORT=8090
     volumes:
       - ./simplex-data:/home/simplex/.simplex
     # healthcheck:

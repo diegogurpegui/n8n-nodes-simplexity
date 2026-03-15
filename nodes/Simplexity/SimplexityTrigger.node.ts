@@ -535,24 +535,49 @@ export class SimplexityTrigger implements INodeType {
               binary?: Record<string, unknown>;
             }> = [{ json: outputData }];
             const fileBasePath = (credentials as { fileBasePath?: string }).fileBasePath?.trim();
+            const fileServerPort = (credentials as { fileServerPort?: number }).fileServerPort;
             const firstFile = outputData.files?.[0];
             const fileObj = firstFile?.file as
               | { filePath?: string; fileSource?: { filePath?: string }; fileName?: string }
               | undefined;
             const filePath = fileObj?.filePath ?? fileObj?.fileSource?.filePath;
             const fileName = fileObj?.fileName ?? 'file';
-            const canReadBinary = filePath && (filePath.startsWith('/') || !!fileBasePath);
+            const canReadBinary =
+              filePath &&
+              (filePath.startsWith('/') || !!fileBasePath || (fileServerPort && fileServerPort > 0));
             if (canReadBinary && filePath) {
+              let buffer: Buffer | null = null;
               try {
                 const absPath = filePath.startsWith('/') ? filePath : join(fileBasePath!, filePath);
-                const buffer = await readFile(absPath);
-                const binaryData = await this.helpers.prepareBinaryData(buffer, fileName || 'file');
-                emitPayload = [{ json: outputData, binary: { data: binaryData } }];
+                buffer = await readFile(absPath);
                 console.log(`[SimpleXity] Added binary for ${fileName} from ${absPath}`);
               } catch (err) {
-                console.warn(
-                  `[SimpleXity] Could not read file for binary output: ${err instanceof Error ? err.message : err}`
-                );
+                const isEnoent =
+                  err instanceof Error && 'code' in err && (err as NodeJS.ErrnoException).code === 'ENOENT';
+                if (isEnoent && fileServerPort && fileServerPort > 0 && credentials.host) {
+                  try {
+                    const url = `http://${credentials.host}:${fileServerPort}/file?path=${encodeURIComponent(filePath)}`;
+                    const res = await fetch(url);
+                    if (res.ok) {
+                      const arrBuf = await res.arrayBuffer();
+                      buffer = Buffer.from(arrBuf);
+                      console.log(`[SimpleXity] Fetched binary for ${fileName} via file server`);
+                    }
+                  } catch (fetchErr) {
+                    console.warn(
+                      `[SimpleXity] File server fetch failed: ${fetchErr instanceof Error ? fetchErr.message : fetchErr}`
+                    );
+                  }
+                }
+                if (!buffer) {
+                  console.warn(
+                    `[SimpleXity] Could not read file for binary output: ${err instanceof Error ? err.message : err}`
+                  );
+                }
+              }
+              if (buffer) {
+                const binaryData = await this.helpers.prepareBinaryData(buffer, fileName || 'file');
+                emitPayload = [{ json: outputData, binary: { data: binaryData } }];
               }
             }
 

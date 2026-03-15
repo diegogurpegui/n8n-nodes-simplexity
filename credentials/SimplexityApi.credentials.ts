@@ -35,7 +35,15 @@ export class SimplexityApi implements ICredentialType {
       type: 'string',
       default: '/home/node/.n8n/temp',
       description:
-        'Path to SimpleX profile directory where received files are stored. Required for binary output. If rcvFileComplete provides an absolute path, this is ignored.',
+        'Path to SimpleX profile directory where received files are stored. Used when files are on the same filesystem (e.g. shared volume).',
+    },
+    {
+      displayName: 'File Server Port',
+      name: 'fileServerPort',
+      type: 'number',
+      default: 8090,
+      description:
+        'Port for the HTTP file server (same host as WebSocket). When set, the trigger fetches received files over HTTP when they are not on the local filesystem. Set to 0 to disable.',
     },
   ];
 }

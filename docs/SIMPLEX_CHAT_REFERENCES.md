@@ -63,7 +63,7 @@ This project uses:
 - **Trigger events (selectable):** `newChatItems`, `contactConnected`, `contactConnecting`, `receivedContactRequest`, `rcvFileAccepted`, `rcvFileStart`, `rcvFileComplete`, `chatItemUpdated`, `chatItemDeleted`
 - **newChatItems content types:** text, link, voice, file, image, video. Voice/audio messages have `msgContent.type === 'voice'` (text may be empty). File invitations use `content.type === 'rcvFileInvitation'`.
 - **Audio flow:** Voice message → `newChatItems` with voice content. SimpleX auto-accepts inline voice transfers (do not call apiReceiveFile; it yields fileAlreadyReceiving). Wait for `rcvFileComplete` for file path. Standalone files: call `apiReceiveFile(fileId)` on rcvInvitation. Do not call `apiReceiveFile` on `rcvFileAccepted`; it causes "error receiving file".
-- **Binary output:** Set "File Base Path" in credentials to the SimpleX profile directory (e.g. `/home/simplex/.simplex`). When `rcvFileComplete` provides filePath, the trigger reads the file and outputs it as binary `data` for downstream nodes (e.g. speech-to-text).
+- **Binary output:** When n8n and SimpleX CLI run in separate containers, set "File Server Port" (default 8090) to fetch files over HTTP from the same host. Alternatively, use a shared volume and "File Base Path" to read files directly.
 - **Debug logging:** Trigger logs `[SimpleXity]` prefixed messages; set log level to debug to see raw response structure.
 - **Action:** Uses `chat.apiSendTextMessage(T.ChatType.Direct, contactId, message)`
 - **Credentials:** Host, port, optional bot address – see `credentials/SimplexityApi.credentials.ts`

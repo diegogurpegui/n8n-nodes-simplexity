@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     ca-certificates \
     socat \
+    python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install telnet
@@ -29,9 +30,10 @@ RUN useradd -m -s /bin/bash simplex
 # Create the .simplex directory and set proper ownership
 RUN mkdir -p /home/simplex/.simplex && chown -R simplex:simplex /home/simplex/.simplex
 
-# Copy the startup script
+# Copy the startup script and file server
 COPY start-simplex.sh /usr/local/bin/start-simplex.sh
-RUN chmod +x /usr/local/bin/start-simplex.sh
+COPY file-server.py /usr/local/bin/file-server.py
+RUN chmod +x /usr/local/bin/start-simplex.sh /usr/local/bin/file-server.py
 
 # Switch to non-root user
 USER simplex

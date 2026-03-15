@@ -48,6 +48,7 @@ You can setup the following fields:
 - **Host**: SimpleX Client host (default: localhost)
 - **Port**: SimpleX Client port (default: 5225)
 - **Bot Address**: Optional SimpleX bot address (will be created if not provided)
+- **File Server Port**: Port for the HTTP file server (default 8090). When set, fetches received files over HTTP when not on local filesystem. Set to 0 to disable.
 
 ### Node Operations
 

@@ -19,6 +19,13 @@ check_profile_exists() {
     fi
 }
 
+# Function to start the file server (for n8n to fetch received files over HTTP)
+start_file_server() {
+    echo "Starting file server on port ${FILE_SERVER_PORT:-8090}"
+    python3 /usr/local/bin/file-server.py &
+    FILE_SERVER_PID=$!
+}
+
 # Function to start simplex-chat with common parameters
 start_simplex_chat() {
     # (By default it binds to localhost only)
@@ -34,6 +41,7 @@ start_simplex_chat() {
 
 # Function to start socat for port forwarding
 start_socat_forward() {
+    start_file_server
     echo "Starting socat to forward traffic from 0.0.0.0:$DEFAULT_PORT to 127.0.0.1:$INTERNAL_PORT"
     socat TCP-LISTEN:$DEFAULT_PORT,fork,reuseaddr TCP:127.0.0.1:$INTERNAL_PORT &
     SOCAT_PID=$!
@@ -82,6 +90,10 @@ start_simplex_normal() {
 # Function to cleanup on exit
 cleanup() {
     echo "Cleaning up..."
+    if [ ! -z "$FILE_SERVER_PID" ]; then
+        echo "Stopping file server (PID: $FILE_SERVER_PID)"
+        kill $FILE_SERVER_PID 2>/dev/null || true
+    fi
     if [ ! -z "$SOCAT_PID" ]; then
         echo "Stopping socat (PID: $SOCAT_PID)"
         kill $SOCAT_PID 2>/dev/null || true
