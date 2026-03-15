@@ -46,7 +46,7 @@ export class SimplexityTrigger implements INodeType {
     name: 'simplexityTrigger',
     icon: 'file:simplexity.svg',
     group: ['trigger'],
-    version: 1,
+    version: 2,
     subtitle: 'Triggers when a new message is received',
     description: 'Triggers workflows when SimpleX messages are received',
     defaults: {
@@ -203,6 +203,11 @@ export class SimplexityTrigger implements INodeType {
             }
 
             const respType = resp.type as string;
+            let rcvFileAcceptedAudioResult: {
+              file: T.CIFile;
+              chatInfo: T.ChatInfo;
+              chatItem: T.ChatItem;
+            } | undefined;
 
             // Debug: log raw response structure (helps diagnose audio/voice messages)
             console.debug(`[SimpleXity] Received: type=${respType}`, {
@@ -217,18 +222,26 @@ export class SimplexityTrigger implements INodeType {
                   : undefined,
             });
 
-            // Always accept audio files on rcvFileAccepted (even if not in messageTypes)
+            // Always auto-accept audio files on rcvFileAccepted (runs before message type filter)
             if (respType === 'rcvFileAccepted' && chat) {
               const rcvResp = resp as {
                 chatItem?: {
-                  chatInfo?: T.ChatInfo;
-                  chatItem?: { file?: { fileId: number; fileName?: string } };
+                  chatInfo: T.ChatInfo;
+                  chatItem: T.ChatItem & { file?: { fileId: number; fileName?: string } };
                 };
               };
               const file = rcvResp.chatItem?.chatItem?.file;
               if (file && isAudioFile(file.fileName ?? '')) {
                 try {
-                  await chat.apiReceiveFile(file.fileId);
+                  const fileChatItem = await chat.apiReceiveFile(file.fileId);
+                  const receivedFile = (fileChatItem.chatItem as { file?: T.CIFile }).file;
+                  if (receivedFile && rcvResp.chatItem) {
+                    rcvFileAcceptedAudioResult = {
+                      file: receivedFile,
+                      chatInfo: rcvResp.chatItem.chatInfo,
+                      chatItem: rcvResp.chatItem.chatItem,
+                    };
+                  }
                   console.debug(`[SimpleXity] Auto-accepted audio file: ${file.fileName}`);
                 } catch (err) {
                   console.error('[SimpleXity] Failed to accept audio file:', err);
@@ -305,14 +318,13 @@ export class SimplexityTrigger implements INodeType {
                 console.debug(`[SimpleXity] newChatItems: ${chatItems.length} items`);
 
                 for (const { chatInfo, chatItem } of chatItems) {
-                  // Only process direct messages
                   if (chatInfo.type !== 'direct') {
                     console.debug(`Skipping non-direct chat: ${chatInfo.type}`);
                     continue;
                   }
 
-                  // rcvFileInvitation: file/voice offer (file not yet received)
-                  if ((chatItem.content as { type: string }).type === 'rcvFileInvitation') {
+                  const contentWrapperType = (chatItem.content as { type: string }).type;
+                  if (contentWrapperType === 'rcvFileInvitation') {
                     const rcvFile = (chatItem.content as { rcvFileTransfer?: { fileId?: number } })
                       .rcvFileTransfer;
                     messages.push({
@@ -325,10 +337,9 @@ export class SimplexityTrigger implements INodeType {
                     );
                     continue;
                   }
-
-                  if (chatItem.content.type !== 'rcvMsgContent') {
+                  if (contentWrapperType !== 'rcvMsgContent') {
                     console.debug(
-                      `[SimpleXity] Skipping content type: ${chatItem.content.type} (not rcvMsgContent)`
+                      `[SimpleXity] Skipping content type: ${contentWrapperType} (not rcvMsgContent)`
                     );
                     continue;
                   }
@@ -337,36 +348,31 @@ export class SimplexityTrigger implements INodeType {
                   const contentType = (msgContent?.type ?? 'unknown') as string;
                   const text = msgContent?.text ?? '';
 
-                  // Text messages: use text directly
-                  if (contentType === 'text' || contentType === 'link') {
-                    if (text) {
-                      messages.push({ chatInfo, chatItem, message: text });
+                  switch (contentType) {
+                    case 'text':
+                    case 'link':
+                      if (text) messages.push({ chatInfo, chatItem, message: text });
+                      break;
+                    case 'voice':
+                    case 'file':
+                    case 'image':
+                    case 'video': {
+                      const label =
+                        contentType === 'voice' ? '[Voice message]' : `[${contentType} message]`;
+                      messages.push({ chatInfo, chatItem, message: text || label });
+                      console.debug(
+                        `[SimpleXity] Added ${contentType} message, text="${text || '(empty)'}"`
+                      );
+                      break;
                     }
-                    continue;
-                  }
-
-                  // Voice, file, image, video: no text or optional caption
-                  if (['voice', 'file', 'image', 'video'].includes(contentType)) {
-                    const label =
-                      contentType === 'voice' ? '[Voice message]' : `[${contentType} message]`;
-                    messages.push({
-                      chatInfo,
-                      chatItem,
-                      message: text || label,
-                    });
-                    console.debug(
-                      `[SimpleXity] Added ${contentType} message, text="${text || '(empty)'}"`
-                    );
-                    continue;
-                  }
-
-                  // Fallback for unknown types (e.g. MCUnknown with type "voice")
-                  if (contentType !== 'unknown' && contentType !== 'text') {
-                    messages.push({
-                      chatInfo,
-                      chatItem,
-                      message: text || `[${contentType} message]`,
-                    });
+                    default:
+                      if (contentType !== 'unknown') {
+                        messages.push({
+                          chatInfo,
+                          chatItem,
+                          message: text || `[${contentType} message]`,
+                        });
+                      }
                   }
                 }
                 outputData = {
@@ -389,35 +395,31 @@ export class SimplexityTrigger implements INodeType {
                   break;
                 }
 
-                // Accept audio files automatically
-                let fileReceived: T.CIFile | undefined = undefined;
-                if (isAudioFile(file.fileName ?? '') && chat) {
+                let fileReceived: T.CIFile | undefined;
+                if (rcvFileAcceptedAudioResult) {
+                  fileReceived = rcvFileAcceptedAudioResult.file;
+                } else if (chat) {
                   try {
                     const fileChatItem = await chat.apiReceiveFile(file.fileId);
                     fileReceived = (fileChatItem.chatItem as { file?: T.CIFile }).file;
-                    console.debug(`[SimpleXity] Audio file accepted: ${file.fileName}`);
                   } catch (error) {
-                    console.error('[SimpleXity] Error receiving audio file:', error);
+                    console.error('[SimpleXity] Error receiving file:', error);
+                    fileReceived = undefined;
                   }
+                } else {
+                  fileReceived = undefined;
                 }
 
-                if (!fileReceived) {
-                  console.debug(
-                    '[SimpleXity] rcvFileAccepted: file not auto-accepted (not audio or error)'
-                  );
-                }
-
+                const fileEntry = fileReceived
+                  ? {
+                      chatInfo: rcvFileAcceptedAudioResult?.chatInfo ?? rcvResp.chatItem.chatInfo,
+                      chatItem: rcvFileAcceptedAudioResult?.chatItem ?? rcvResp.chatItem.chatItem,
+                      file: fileReceived,
+                    }
+                  : null;
                 outputData = {
                   ...outputData,
-                  files: fileReceived
-                    ? [
-                        {
-                          chatInfo: rcvResp.chatItem.chatInfo,
-                          chatItem: rcvResp.chatItem.chatItem,
-                          file: fileReceived,
-                        },
-                      ]
-                    : [],
+                  files: fileEntry ? [fileEntry] : [],
                 };
                 break;
               }
