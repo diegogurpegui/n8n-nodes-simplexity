@@ -12,6 +12,7 @@ import {
 import { ChatClient } from 'simplex-chat';
 // import { ciContentText } from 'simplex-chat/dist/response';
 import type { T, ChatResponse } from '@simplex-chat/types';
+import { CC } from '@simplex-chat/types';
 
 function isAudioFile(fileName: string): boolean {
   return /\.(ogg|m4a|mp3|wav|opus|aac)$/i.test(fileName);
@@ -370,6 +371,7 @@ export class SimplexityTrigger implements INodeType {
                         contentType === 'voice' ? '[Voice message]' : `[${contentType} message]`;
                       messages.push({ chatInfo, chatItem, message: text || label });
                       // Voice/file/image/video can have chatItem.file with rcvInvitation - call apiReceiveFile to accept
+                      // Voice messages use inline file transfers; apiReceiveFile (no fileInline) fails. Use fileInline: true.
                       const file = (
                         chatItem as {
                           file?: {
@@ -384,17 +386,36 @@ export class SimplexityTrigger implements INodeType {
                         file?.fileStatus?.type === 'rcvInvitation' &&
                         chat
                       ) {
+                        const useInline = contentType === 'voice';
                         try {
-                          console.log(
-                            `[SimpleXity] Calling apiReceiveFile(fileId=${file.fileId}) from ${contentType} message`
-                          );
-                          await chat.apiReceiveFile(file.fileId);
-                          console.log(`[SimpleXity] apiReceiveFile OK for fileId=${file.fileId}`);
+                          if (useInline) {
+                            const cmd = CC.ReceiveFile.cmdString({
+                              fileId: file.fileId,
+                              userApprovedRelays: true,
+                              fileInline: true,
+                            });
+                            const r = await chat.sendChatCmd(cmd);
+                            if (r.type === 'rcvFileAccepted' || r.type === 'rcvFileAcceptedSndCancelled') {
+                              console.log(`[SimpleXity] apiReceiveFile (inline) OK for fileId=${file.fileId}`);
+                            } else {
+                              console.error(
+                                `[SimpleXity] apiReceiveFile (inline) unexpected response: ${r.type}`,
+                                JSON.stringify(r)
+                              );
+                            }
+                          } else {
+                            await chat.apiReceiveFile(file.fileId);
+                            console.log(`[SimpleXity] apiReceiveFile OK for fileId=${file.fileId}`);
+                          }
                         } catch (err) {
+                          const errResp = (err as { response?: unknown })?.response;
                           console.error(
                             '[SimpleXity] apiReceiveFile FAILED from voice/file:',
                             err instanceof Error ? err.message : err
                           );
+                          if (errResp) {
+                            console.error('[SimpleXity] Server response:', JSON.stringify(errResp));
+                          }
                         }
                       }
                       console.debug(
