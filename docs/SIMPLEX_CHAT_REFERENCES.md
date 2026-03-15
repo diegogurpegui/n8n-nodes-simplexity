@@ -60,7 +60,7 @@ This project uses:
 
 ## Project-Specific Notes
 
-- **Trigger events:** `newChatItems`, `contactConnected`, `rcvFileAccepted`, `rcvFileComplete`
+- **Trigger events (selectable):** `newChatItems`, `contactConnected`, `contactConnecting`, `receivedContactRequest`, `rcvFileAccepted`, `rcvFileStart`, `rcvFileComplete`, `chatItemUpdated`, `chatItemDeleted`
 - **newChatItems content types:** text, link, voice, file, image, video. Voice/audio messages have `msgContent.type === 'voice'` (text may be empty). File invitations use `content.type === 'rcvFileInvitation'`.
 - **Audio flow:** Voice message → `newChatItems` (voice metadata) and/or `rcvFileAccepted` (file offer) → accept via `apiReceiveFile` → `rcvFileComplete` (file ready).
 - **Debug logging:** Trigger logs `[SimpleXity]` prefixed messages; set log level to debug to see raw response structure.
